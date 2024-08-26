@@ -1,0 +1,38 @@
+
+-- Tabela de vendas
+CREATE TABLE vendas (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    produto_id INT,
+    data_venda DATE,
+    quantidade INT
+);
+
+-- Tabela para armazenar o relat�rio di�rio
+CREATE TABLE relatorio_diario (
+    data_relatorio DATE,
+    produto_id INT,
+    quantidade_total INT,
+    PRIMARY KEY (data_relatorio, produto_id)
+);
+
+
+
+DELIMITER $$
+
+CREATE PROCEDURE GerarRelatorioDiario()
+BEGIN
+    -- Limpar dados existentes no relat�rio di�rio para evitar duplica��es
+    DELETE FROM relatorio_diario WHERE data_relatorio = CURDATE();
+
+    -- Inserir o resumo di�rio das vendas na tabela de relat�rio
+    INSERT INTO relatorio_diario (data_relatorio, produto_id, quantidade_total)
+    SELECT data_venda, produto_id, SUM(quantidade)
+    FROM vendas
+    WHERE data_venda = CURDATE()
+    GROUP BY data_venda, produto_id;
+
+    -- Mensagem de sucesso
+    SELECT 'Relat�rio di�rio gerado com sucesso!' AS resultado;
+END$$
+
+DELIMITER ;
